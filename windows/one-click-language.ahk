@@ -3,73 +3,116 @@
 Persistent
 
 ; One-Click Language — Windows helper
-; Caps Lock = switch Windows keyboard language (AR <-> EN)
-; Floating toolbar = switch / translate selected text / quick-fix selected text
+; Caps Lock = switch Windows keyboard language
+; Floating toolbar = switch / direct translate / smart fix selected text
 
 global Toolbar := Gui("+AlwaysOnTop +ToolWindow", "One-Click Language")
+global LastExternalWindow := 0
+global StatusText := ""
+
 Toolbar.SetFont("s10", "Segoe UI")
 Toolbar.MarginX := 10
 Toolbar.MarginY := 10
 
 btnSwitch := Toolbar.AddButton("w110 h34", "AR ⇄ EN")
 btnTranslate := Toolbar.AddButton("x+8 w110 h34", "Translate")
-btnFix := Toolbar.AddButton("x+8 w110 h34", "Quick Fix")
+btnFix := Toolbar.AddButton("x+8 w110 h34", "Smart Fix")
 btnSettings := Toolbar.AddButton("x+8 w110 h34", "Typing Settings")
+StatusText := Toolbar.AddText("xm y+8 w464", "Ready")
 
 btnSwitch.OnEvent("Click", (*) => SwitchLanguage())
 btnTranslate.OnEvent("Click", (*) => TranslateSelection())
-btnFix.OnEvent("Click", (*) => QuickFixSelection())
+btnFix.OnEvent("Click", (*) => SmartFixSelection())
 btnSettings.OnEvent("Click", (*) => Run("ms-settings:typing"))
 
 Toolbar.Show("AutoSize x20 y20 NoActivate")
+SetTimer(TrackActiveWindow, 150)
 
 CapsLock::{
     SwitchLanguage()
 }
 
+TrackActiveWindow() {
+    global Toolbar, LastExternalWindow
+    hwnd := WinExist("A")
+    if (hwnd && hwnd != Toolbar.Hwnd)
+        LastExternalWindow := hwnd
+}
+
+FocusPreviousWindow() {
+    global LastExternalWindow
+    if (LastExternalWindow && WinExist("ahk_id " LastExternalWindow)) {
+        WinActivate("ahk_id " LastExternalWindow)
+        Sleep 120
+        return true
+    }
+    return false
+}
+
 SwitchLanguage() {
-    ; Windows officially uses Win+Space to cycle installed input languages.
-    Send "#{Space}"
-    ShowTip("Language switched")
+    Send("#{Space}")
+    SetStatus("Language switched")
 }
 
 TranslateSelection() {
     txt := GetSelectedText()
     if (txt = "") {
-        ShowTip("Select some text first")
+        SetStatus("Select text first")
         return
     }
 
-    target := HasArabic(txt) ? "en" : "ar"
-    url := "https://translate.google.com/?sl=auto&tl=" target "&text=" UrlEncode(txt) "&op=translate"
-    Run(url)
-    ShowTip(target = "en" ? "Opening English translation" : "Opening Arabic translation")
+    SetStatus("Translating...")
+    result := RunHelper("translate", txt)
+
+    if (SubStr(result, 1, 10) = "__ERROR__:") {
+        SetStatus("Translation failed")
+        MsgBox(SubStr(result, 11), "One-Click Language")
+        return
+    }
+
+    if (result = "") {
+        SetStatus("No translation returned")
+        return
+    }
+
+    ReplaceSelection(result)
+    SetStatus("Translated and replaced")
 }
 
-QuickFixSelection() {
+SmartFixSelection() {
     txt := GetSelectedText()
     if (txt = "") {
-        ShowTip("Select some text first")
+        SetStatus("Select text first")
         return
     }
 
-    fixed := txt
-    fixed := RegExReplace(fixed, "[ \t]+", " ")
-    fixed := RegExReplace(fixed, "\s+([,.;:!?،؛])", "$1")
-    fixed := RegExReplace(fixed, "([,.;:!?،؛])([^\s\r\n])", "$1 $2")
-    fixed := RegExReplace(fixed, "(\r?\n){3,}", "`n`n")
-    fixed := Trim(fixed)
+    SetStatus("Checking spelling & grammar...")
+    result := RunHelper("fix", txt)
 
-    ReplaceSelection(fixed)
-    ShowTip("Quick formatting fixed")
+    if (SubStr(result, 1, 10) = "__ERROR__:") {
+        SetStatus("Smart Fix failed")
+        MsgBox(SubStr(result, 11), "One-Click Language")
+        return
+    }
+
+    if (result = "") {
+        SetStatus("No corrected text returned")
+        return
+    }
+
+    ReplaceSelection(result)
+    SetStatus("Corrected and replaced")
 }
 
 GetSelectedText() {
+    if !FocusPreviousWindow()
+        return ""
+
     saved := ClipboardAll()
     A_Clipboard := ""
-    Send "^c"
+    Send("^c")
 
-    if !ClipWait(0.8) {
+    if !ClipWait(1.2) {
         A_Clipboard := saved
         return ""
     }
@@ -80,46 +123,56 @@ GetSelectedText() {
 }
 
 ReplaceSelection(newText) {
+    FocusPreviousWindow()
     saved := ClipboardAll()
     A_Clipboard := newText
     ClipWait(0.5)
-    Send "^v"
-    Sleep 80
+    Send("^v")
+    Sleep 120
     A_Clipboard := saved
 }
 
-HasArabic(txt) {
-    return RegExMatch(txt, "[\x{0600}-\x{06FF}]")
-}
+RunHelper(mode, txt) {
+    helper := A_ScriptDir "\language-helper.ps1"
+    if !FileExist(helper)
+        return "__ERROR__:Missing language-helper.ps1 in the same folder."
 
-UrlEncode(str) {
-    size := StrPut(str, "UTF-8")
-    buf := Buffer(size)
-    StrPut(str, buf, "UTF-8")
+    stamp := A_TickCount
+    inputFile := A_Temp "\ocl_input_" stamp ".txt"
+    outputFile := A_Temp "\ocl_output_" stamp ".txt"
 
-    out := ""
-    Loop size - 1 {
-        b := NumGet(buf, A_Index - 1, "UChar")
+    try {
+        FileAppend(txt, inputFile, "UTF-8")
 
-        if (
-            (b >= 0x30 && b <= 0x39)
-            || (b >= 0x41 && b <= 0x5A)
-            || (b >= 0x61 && b <= 0x7A)
-            || b = 0x2D
-            || b = 0x2E
-            || b = 0x5F
-            || b = 0x7E
-        ) {
-            out .= Chr(b)
-        } else {
-            out .= "%" Format("{:02X}", b)
-        }
+        q := Chr(34)
+        cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -File "
+            . q helper q
+            . " -Mode " q mode q
+            . " -InputFile " q inputFile q
+            . " -OutputFile " q outputFile q
+
+        exitCode := RunWait(cmd, , "Hide")
+
+        if !FileExist(outputFile)
+            return "__ERROR__:The helper did not return a result."
+
+        result := FileRead(outputFile, "UTF-8")
+
+        try FileDelete(inputFile)
+        try FileDelete(outputFile)
+
+        if (exitCode != 0 && SubStr(result, 1, 10) != "__ERROR__:")
+            return "__ERROR__:PowerShell helper failed with exit code " exitCode "."
+
+        return result
+    } catch as err {
+        try FileDelete(inputFile)
+        try FileDelete(outputFile)
+        return "__ERROR__:" err.Message
     }
-
-    return out
 }
 
-ShowTip(message) {
-    ToolTip(message)
-    SetTimer(() => ToolTip(), -1200)
+SetStatus(message) {
+    global StatusText
+    StatusText.Text := message
 }
