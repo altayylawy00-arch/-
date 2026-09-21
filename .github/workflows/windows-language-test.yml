@@ -17,3 +17,26 @@ jobs:
       - name: Run translation and correction tests
         shell: pwsh
         run: .\windows\test-language-engine.ps1
+
+      - name: Install AutoHotkey v2
+        shell: pwsh
+        run: choco install autohotkey.portable --version=2.0.28 -y --no-progress
+
+      - name: Validate AutoHotkey script starts
+        shell: pwsh
+        run: |
+          $exe = (Get-Command AutoHotkey.exe -ErrorAction Stop).Source
+          $stdout = Join-Path $env:TEMP "ahk-out.txt"
+          $stderr = Join-Path $env:TEMP "ahk-err.txt"
+          $p = Start-Process -FilePath $exe -ArgumentList @("/ErrorStdOut", ".\windows\one-click-language.ahk") -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          Start-Sleep -Seconds 3
+          if ($p.HasExited) {
+            $out = (Get-Content $stdout -Raw -ErrorAction SilentlyContinue)
+            $err = (Get-Content $stderr -Raw -ErrorAction SilentlyContinue)
+            if ($p.ExitCode -ne 0 -or $out -or $err) {
+              throw "AutoHotkey startup failed. Exit=$($p.ExitCode) STDOUT=$out STDERR=$err"
+            }
+          } else {
+            Stop-Process -Id $p.Id -Force
+          }
+          Write-Host "PASS: AutoHotkey script launched without syntax/startup errors."
