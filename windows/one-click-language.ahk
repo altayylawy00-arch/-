@@ -9,6 +9,7 @@ Persistent
 global Toolbar := Gui("+AlwaysOnTop +ToolWindow", "One-Click Language")
 global LastExternalWindow := 0
 global StatusText := ""
+global ToolbarVisible := true
 
 Toolbar.SetFont("s10", "Segoe UI")
 Toolbar.MarginX := 10
@@ -32,6 +33,10 @@ CapsLock::{
     SwitchLanguage()
 }
 
+F8::{
+    ToggleToolbar()
+}
+
 TrackActiveWindow() {
     global Toolbar, LastExternalWindow
     hwnd := WinExist("A")
@@ -47,6 +52,17 @@ FocusPreviousWindow() {
         return true
     }
     return false
+}
+
+ToggleToolbar() {
+    global Toolbar, ToolbarVisible
+    if ToolbarVisible {
+        Toolbar.Hide()
+        ToolbarVisible := false
+    } else {
+        Toolbar.Show("AutoSize x20 y20 NoActivate")
+        ToolbarVisible := true
+    }
 }
 
 SwitchLanguage() {
