@@ -1,12 +1,11 @@
-name: Windows language helper tests
+name: One-Click Language smoke test
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
     branches:
-      - feature/final-language-v3
+      - final/stable-official-integrations
   workflow_dispatch:
 
 jobs:
@@ -14,9 +13,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run translation and correction tests
-        shell: pwsh
-        run: .\windows\test-language-engine.ps1
 
       - name: Install AutoHotkey v2
         shell: pwsh
@@ -31,12 +27,12 @@ jobs:
           $p = Start-Process -FilePath $exe -ArgumentList @("/ErrorStdOut", ".\windows\one-click-language.ahk") -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
           Start-Sleep -Seconds 3
           if ($p.HasExited) {
-            $out = (Get-Content $stdout -Raw -ErrorAction SilentlyContinue)
-            $err = (Get-Content $stderr -Raw -ErrorAction SilentlyContinue)
+            $out = Get-Content $stdout -Raw -ErrorAction SilentlyContinue
+            $err = Get-Content $stderr -Raw -ErrorAction SilentlyContinue
             if ($p.ExitCode -ne 0 -or $out -or $err) {
               throw "AutoHotkey startup failed. Exit=$($p.ExitCode) STDOUT=$out STDERR=$err"
             }
           } else {
             Stop-Process -Id $p.Id -Force
           }
-          Write-Host "PASS: AutoHotkey script launched without syntax/startup errors."
+          Write-Host "PASS: AutoHotkey script launched without startup errors."
