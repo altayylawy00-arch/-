@@ -18,11 +18,28 @@ function Invoke-Translation([string]$Text) {
     $source = if (Has-Arabic $Text) { "ar" } else { "en" }
     $target = if ($source -eq "ar") { "en" } else { "ar" }
     $encoded = [System.Uri]::EscapeDataString($Text)
-    $headers = @{ "User-Agent" = "OneClickLanguage/3.1" }
+    $headers = @{ "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) OneClickLanguage/3.2" }
     $errors = @()
 
-    # Primary: Lingva. It is used first because its output is generally
-    # more suitable for direct sentence translation than translation-memory matches.
+    # Primary: the Chrome dictionary translation endpoint.
+    # This is different from the translate.googleapis.com endpoint that returned 429.
+    try {
+        $uri = "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=$source&tl=$target&q=$encoded"
+        $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
+        $candidate = if ($r -is [System.Array] -and $r.Count -gt 0) { [string]$r[0] } else { [string]$r }
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) {
+            $candidate = $candidate.Trim()
+            if (($target -eq "ar" -and (Has-Arabic $candidate)) -or
+                ($target -eq "en" -and [regex]::IsMatch($candidate,'[A-Za-z]'))) {
+                return $candidate
+            }
+        }
+        $errors += "Primary translation returned no usable result."
+    } catch {
+        $errors += "Primary translation: " + $_.Exception.Message
+    }
+
+    # Fallback 1: Lingva.
     try {
         $uri = "https://lingva.ml/api/v1/$source/$target/$encoded"
         $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
@@ -39,7 +56,7 @@ function Invoke-Translation([string]$Text) {
         $errors += "Lingva: " + $_.Exception.Message
     }
 
-    # Fallback: MyMemory machine translation.
+    # Fallback 2: MyMemory machine translation.
     try {
         $uri = "https://api.mymemory.translated.net/get?q=$encoded&langpair=$source%7C$target&mt=1"
         $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
