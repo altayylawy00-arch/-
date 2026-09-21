@@ -29,14 +29,14 @@ foreach($t in $tests){
 }
 
 $enToAr=Run-Engine "translate" "hello my friend"
-if($enToAr.StartsWith("__ERROR__:") -or -not [regex]::IsMatch($enToAr,'[\u0600-\u06FF]')){
-    throw "English->Arabic translation failed: $enToAr"
+if($enToAr.StartsWith("__ERROR__:") -or -not [regex]::IsMatch($enToAr,'صديق')){
+    throw "English->Arabic translation failed quality check: $enToAr"
 }
 Write-Host "PASS: English->Arabic -> $enToAr"
 
 $arToEn=Run-Engine "translate" "مرحبا يا صديقي"
-if($arToEn.StartsWith("__ERROR__:") -or -not [regex]::IsMatch($arToEn,'[A-Za-z]')){
-    throw "Arabic->English translation failed: $arToEn"
+if($arToEn.StartsWith("__ERROR__:") -or -not [regex]::IsMatch($arToEn,'(?i)friend')){
+    throw "Arabic->English translation failed quality check: $arToEn"
 }
 Write-Host "PASS: Arabic->English -> $arToEn"
 
