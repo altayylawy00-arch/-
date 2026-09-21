@@ -27,6 +27,7 @@ btnFix.OnEvent("Click", (*) => SmartFixSelection())
 btnSettings.OnEvent("Click", (*) => Run("ms-settings:typing"))
 
 Toolbar.Show("AutoSize x20 y20 NoActivate")
+SetStatus("Ready — helper downloads automatically when needed")
 SetTimer(TrackActiveWindow, 150)
 
 CapsLock::{
@@ -148,10 +149,29 @@ ReplaceSelection(newText) {
     A_Clipboard := saved
 }
 
-RunHelper(mode, txt) {
+EnsureHelper() {
     helper := A_ScriptDir "\language-helper.ps1"
-    if !FileExist(helper)
-        return "__ERROR__:Missing language-helper.ps1 in the same folder."
+    if FileExist(helper)
+        return helper
+
+    try {
+        Download(
+            "https://raw.githubusercontent.com/altayylawy00-arch/-/main/windows/language-helper.ps1",
+            helper
+        )
+        if FileExist(helper)
+            return helper
+    } catch as err {
+        return ""
+    }
+
+    return ""
+}
+
+RunHelper(mode, txt) {
+    helper := EnsureHelper()
+    if (helper = "")
+        return "__ERROR__:Could not prepare the translation/correction helper. Check your internet connection and try again."
 
     stamp := A_TickCount
     inputFile := A_Temp "\ocl_input_" stamp ".txt"
