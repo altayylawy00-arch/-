@@ -1,0 +1,16 @@
+name: Windows language helper tests
+
+on:
+  push:
+    branches:
+      - feature/final-language-v3
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run translation and correction tests
+        shell: powershell
+        run: .\windows\test-language-engine.ps1
