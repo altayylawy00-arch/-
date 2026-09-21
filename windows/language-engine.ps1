@@ -18,32 +18,43 @@ function Invoke-Translation([string]$Text) {
     $source = if (Has-Arabic $Text) { "ar" } else { "en" }
     $target = if ($source -eq "ar") { "en" } else { "ar" }
     $encoded = [System.Uri]::EscapeDataString($Text)
-    $headers = @{ "User-Agent" = "OneClickLanguage/3.0" }
+    $headers = @{ "User-Agent" = "OneClickLanguage/3.1" }
     $errors = @()
 
-    try {
-        $uri = "https://api.mymemory.translated.net/get?q=$encoded&langpair=$source%7C$target"
-        $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
-        $candidate = [string]$r.responseData.translatedText
-        if ($r.responseStatus -eq 200 -and -not [string]::IsNullOrWhiteSpace($candidate)) {
-            $candidate = [System.Net.WebUtility]::HtmlDecode($candidate).Trim()
-            if ($candidate -ne $Text.Trim()) { return $candidate }
-        }
-        $errors += "MyMemory returned no usable translation."
-    } catch {
-        $errors += "MyMemory: " + $_.Exception.Message
-    }
-
+    # Primary: Lingva. It is used first because its output is generally
+    # more suitable for direct sentence translation than translation-memory matches.
     try {
         $uri = "https://lingva.ml/api/v1/$source/$target/$encoded"
         $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
         $candidate = [string]$r.translation
         if (-not [string]::IsNullOrWhiteSpace($candidate)) {
-            return $candidate.Trim()
+            $candidate = $candidate.Trim()
+            if (($target -eq "ar" -and (Has-Arabic $candidate)) -or
+                ($target -eq "en" -and [regex]::IsMatch($candidate,'[A-Za-z]'))) {
+                return $candidate
+            }
         }
         $errors += "Lingva returned no usable translation."
     } catch {
         $errors += "Lingva: " + $_.Exception.Message
+    }
+
+    # Fallback: MyMemory machine translation.
+    try {
+        $uri = "https://api.mymemory.translated.net/get?q=$encoded&langpair=$source%7C$target&mt=1"
+        $r = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers -TimeoutSec 20
+        $candidate = [string]$r.responseData.translatedText
+        if ($r.responseStatus -eq 200 -and -not [string]::IsNullOrWhiteSpace($candidate)) {
+            $candidate = [System.Net.WebUtility]::HtmlDecode($candidate).Trim()
+            if ($candidate -ne $Text.Trim() -and
+                (($target -eq "ar" -and (Has-Arabic $candidate)) -or
+                 ($target -eq "en" -and [regex]::IsMatch($candidate,'[A-Za-z]')))) {
+                return $candidate
+            }
+        }
+        $errors += "MyMemory returned no usable translation."
+    } catch {
+        $errors += "MyMemory: " + $_.Exception.Message
     }
 
     throw ("Translation services are unavailable right now. " + ($errors -join " | "))
