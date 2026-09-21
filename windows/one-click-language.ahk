@@ -27,7 +27,7 @@ btnFix.OnEvent("Click", (*) => SmartFixSelection())
 btnSettings.OnEvent("Click", (*) => Run("ms-settings:typing"))
 
 Toolbar.Show("AutoSize x20 y20 NoActivate")
-SetStatus("Ready — helper downloads automatically when needed")
+SetStatus("Ready v3 — Translate + Smart Fix")
 SetTimer(TrackActiveWindow, 150)
 
 CapsLock::{
@@ -149,76 +149,36 @@ ReplaceSelection(newText) {
     A_Clipboard := saved
 }
 
+global EngineBase64 := "cGFyYW0oCiAgICBbUGFyYW1ldGVyKE1hbmRhdG9yeT0kdHJ1ZSldW1ZhbGlkYXRlU2V0KCJ0cmFuc2xhdGUiLCJmaXgiKV1bc3RyaW5nXSRNb2RlLAogICAgW1BhcmFtZXRlcihNYW5kYXRvcnk9JHRydWUpXVtzdHJpbmddJElucHV0RmlsZSwKICAgIFtQYXJhbWV0ZXIoTWFuZGF0b3J5PSR0cnVlKV1bc3RyaW5nXSRPdXRwdXRGaWxlCikKCiRFcnJvckFjdGlvblByZWZlcmVuY2UgPSAiU3RvcCIKCmZ1bmN0aW9uIFdyaXRlLVJlc3VsdChbc3RyaW5nXSRUZXh0KSB7CiAgICBbU3lzdGVtLklPLkZpbGVdOjpXcml0ZUFsbFRleHQoJE91dHB1dEZpbGUsJFRleHQsW1N5c3RlbS5UZXh0LlVURjhFbmNvZGluZ106Om5ldygkZmFsc2UpKQp9CgpmdW5jdGlvbiBIYXMtQXJhYmljKFtzdHJpbmddJFRleHQpIHsKICAgIHJldHVybiBbcmVnZXhdOjpJc01hdGNoKCRUZXh0LCdbXHUwNjAwLVx1MDZGRl0nKQp9CgpmdW5jdGlvbiBJbnZva2UtVHJhbnNsYXRpb24oW3N0cmluZ10kVGV4dCkgewogICAgJHNvdXJjZSA9IGlmIChIYXMtQXJhYmljICRUZXh0KSB7ICJhciIgfSBlbHNlIHsgImVuIiB9CiAgICAkdGFyZ2V0ID0gaWYgKCRzb3VyY2UgLWVxICJhciIpIHsgImVuIiB9IGVsc2UgeyAiYXIiIH0KICAgICRlbmNvZGVkID0gW1N5c3RlbS5VcmldOjpFc2NhcGVEYXRhU3RyaW5nKCRUZXh0KQogICAgJGhlYWRlcnMgPSBAeyAiVXNlci1BZ2VudCIgPSAiT25lQ2xpY2tMYW5ndWFnZS8zLjAiIH0KICAgICRlcnJvcnMgPSBAKCkKCiAgICB0cnkgewogICAgICAgICR1cmkgPSAiaHR0cHM6Ly9hcGkubXltZW1vcnkudHJhbnNsYXRlZC5uZXQvZ2V0P3E9JGVuY29kZWQmbGFuZ3BhaXI9JHNvdXJjZSU3QyR0YXJnZXQiCiAgICAgICAgJHIgPSBJbnZva2UtUmVzdE1ldGhvZCAtVXJpICR1cmkgLU1ldGhvZCBHZXQgLUhlYWRlcnMgJGhlYWRlcnMgLVRpbWVvdXRTZWMgMjAKICAgICAgICAkY2FuZGlkYXRlID0gW3N0cmluZ10kci5yZXNwb25zZURhdGEudHJhbnNsYXRlZFRleHQKICAgICAgICBpZiAoJHIucmVzcG9uc2VTdGF0dXMgLWVxIDIwMCAtYW5kIC1ub3QgW3N0cmluZ106OklzTnVsbE9yV2hpdGVTcGFjZSgkY2FuZGlkYXRlKSkgewogICAgICAgICAgICAkY2FuZGlkYXRlID0gW1N5c3RlbS5OZXQuV2ViVXRpbGl0eV06Okh0bWxEZWNvZGUoJGNhbmRpZGF0ZSkuVHJpbSgpCiAgICAgICAgICAgIGlmICgkY2FuZGlkYXRlIC1uZSAkVGV4dC5UcmltKCkpIHsgcmV0dXJuICRjYW5kaWRhdGUgfQogICAgICAgIH0KICAgICAgICAkZXJyb3JzICs9ICJNeU1lbW9yeSByZXR1cm5lZCBubyB1c2FibGUgdHJhbnNsYXRpb24uIgogICAgfSBjYXRjaCB7CiAgICAgICAgJGVycm9ycyArPSAiTXlNZW1vcnk6ICIgKyAkXy5FeGNlcHRpb24uTWVzc2FnZQogICAgfQoKICAgIHRyeSB7CiAgICAgICAgJHVyaSA9ICJodHRwczovL2xpbmd2YS5tbC9hcGkvdjEvJHNvdXJjZS8kdGFyZ2V0LyRlbmNvZGVkIgogICAgICAgICRyID0gSW52b2tlLVJlc3RNZXRob2QgLVVyaSAkdXJpIC1NZXRob2QgR2V0IC1IZWFkZXJzICRoZWFkZXJzIC1UaW1lb3V0U2VjIDIwCiAgICAgICAgJGNhbmRpZGF0ZSA9IFtzdHJpbmddJHIudHJhbnNsYXRpb24KICAgICAgICBpZiAoLW5vdCBbc3RyaW5nXTo6SXNOdWxsT3JXaGl0ZVNwYWNlKCRjYW5kaWRhdGUpKSB7CiAgICAgICAgICAgIHJldHVybiAkY2FuZGlkYXRlLlRyaW0oKQogICAgICAgIH0KICAgICAgICAkZXJyb3JzICs9ICJMaW5ndmEgcmV0dXJuZWQgbm8gdXNhYmxlIHRyYW5zbGF0aW9uLiIKICAgIH0gY2F0Y2ggewogICAgICAgICRlcnJvcnMgKz0gIkxpbmd2YTogIiArICRfLkV4Y2VwdGlvbi5NZXNzYWdlCiAgICB9CgogICAgdGhyb3cgKCJUcmFuc2xhdGlvbiBzZXJ2aWNlcyBhcmUgdW5hdmFpbGFibGUgcmlnaHQgbm93LiAiICsgKCRlcnJvcnMgLWpvaW4gIiB8ICIpKQp9CgpmdW5jdGlvbiBSZXBsYWNlLVdvcmQoW3N0cmluZ10kVGV4dCxbc3RyaW5nXSRCYWQsW3N0cmluZ10kR29vZCxbYm9vbF0kSWdub3JlQ2FzZT0kZmFsc2UpIHsKICAgICRwYXR0ZXJuID0gJyg/PCFbXHB7TH1ccHtNfV0pJyArIFtyZWdleF06OkVzY2FwZSgkQmFkKSArICcoPyFbXHB7TH1ccHtNfV0pJwogICAgJG9wdGlvbnMgPSBpZiAoJElnbm9yZUNhc2UpIHsgW1N5c3RlbS5UZXh0LlJlZ3VsYXJFeHByZXNzaW9ucy5SZWdleE9wdGlvbnNdOjpJZ25vcmVDYXNlIH0gZWxzZSB7IFtTeXN0ZW0uVGV4dC5SZWd1bGFyRXhwcmVzc2lvbnMuUmVnZXhPcHRpb25zXTo6Tm9uZSB9CiAgICByZXR1cm4gW3JlZ2V4XTo6UmVwbGFjZSgkVGV4dCwkcGF0dGVybixbU3lzdGVtLlRleHQuUmVndWxhckV4cHJlc3Npb25zLk1hdGNoRXZhbHVhdG9yXXsgcGFyYW0oJG0pICRHb29kIH0sJG9wdGlvbnMpCn0KCmZ1bmN0aW9uIEdldC1MZXZlbnNodGVpbihbc3RyaW5nXSRBLFtzdHJpbmddJEIpIHsKICAgIGlmICgkQSAtZXEgJEIpIHsgcmV0dXJuIDAgfQogICAgaWYgKCRBLkxlbmd0aCAtZXEgMCkgeyByZXR1cm4gJEIuTGVuZ3RoIH0KICAgIGlmICgkQi5MZW5ndGggLWVxIDApIHsgcmV0dXJuICRBLkxlbmd0aCB9CgogICAgJHByZXYgPSBOZXctT2JqZWN0ICdpbnRbXScgKCRCLkxlbmd0aCArIDEpCiAgICAkY3VyciA9IE5ldy1PYmplY3QgJ2ludFtdJyAoJEIuTGVuZ3RoICsgMSkKICAgIGZvciAoJGo9MDsgJGogLWxlICRCLkxlbmd0aDsgJGorKykgeyAkcHJldlskal0gPSAkaiB9CgogICAgZm9yICgkaT0xOyAkaSAtbGUgJEEuTGVuZ3RoOyAkaSsrKSB7CiAgICAgICAgJGN1cnJbMF0gPSAkaQogICAgICAgIGZvciAoJGo9MTsgJGogLWxlICRCLkxlbmd0aDsgJGorKykgewogICAgICAgICAgICAkY29zdCA9IGlmICgkQVskaS0xXSAtZXEgJEJbJGotMV0pIHsgMCB9IGVsc2UgeyAxIH0KICAgICAgICAgICAgJGN1cnJbJGpdID0gW01hdGhdOjpNaW4oW01hdGhdOjpNaW4oJGN1cnJbJGotMV0gKyAxLCRwcmV2WyRqXSArIDEpLCRwcmV2WyRqLTFdICsgJGNvc3QpCiAgICAgICAgfQogICAgICAgICR0bXA9JHByZXY7ICRwcmV2PSRjdXJyOyAkY3Vycj0kdG1wCiAgICB9CiAgICByZXR1cm4gJHByZXZbJEIuTGVuZ3RoXQp9CgpmdW5jdGlvbiBJbnZva2UtV2luZG93c1NwZWxsRml4KFtzdHJpbmddJFRleHQsW3N0cmluZ10kTGFuZ3VhZ2VUYWcpIHsKICAgIHRyeSB7CiAgICAgICAgQWRkLVR5cGUgLUFzc2VtYmx5TmFtZSBQcmVzZW50YXRpb25GcmFtZXdvcmsgLUVycm9yQWN0aW9uIFN0b3AKICAgICAgICAkdGIgPSBOZXctT2JqZWN0IFN5c3RlbS5XaW5kb3dzLkNvbnRyb2xzLlRleHRCb3gKICAgICAgICAkdGIuTGFuZ3VhZ2UgPSBbU3lzdGVtLldpbmRvd3MuTWFya3VwLlhtbExhbmd1YWdlXTo6R2V0TGFuZ3VhZ2UoJExhbmd1YWdlVGFnKQogICAgICAgIFtTeXN0ZW0uV2luZG93cy5Db250cm9scy5TcGVsbENoZWNrXTo6U2V0SXNFbmFibGVkKCR0YiwkdHJ1ZSkKICAgICAgICAkdGIuVGV4dCA9ICRUZXh0CiAgICAgICAgJHRiLlVwZGF0ZUxheW91dCgpCgogICAgICAgICRyZXBhaXJzID0gQCgpCiAgICAgICAgJGlkeCA9IDAKICAgICAgICB3aGlsZSAoJGlkeCAtbHQgJHRiLlRleHQuTGVuZ3RoKSB7CiAgICAgICAgICAgICRlcnJJbmRleCA9ICR0Yi5HZXROZXh0U3BlbGxpbmdFcnJvckNoYXJhY3RlckluZGV4KCRpZHgsW1N5c3RlbS5XaW5kb3dzLkRvY3VtZW50cy5Mb2dpY2FsRGlyZWN0aW9uXTo6Rm9yd2FyZCkKICAgICAgICAgICAgaWYgKCRlcnJJbmRleCAtbHQgMCkgeyBicmVhayB9CgogICAgICAgICAgICAkbGVuID0gJHRiLkdldFNwZWxsaW5nRXJyb3JMZW5ndGgoJGVyckluZGV4KQogICAgICAgICAgICBpZiAoJGxlbiAtbGUgMCkgeyAkaWR4ID0gJGVyckluZGV4ICsgMTsgY29udGludWUgfQoKICAgICAgICAgICAgJGVycm9yID0gJHRiLkdldFNwZWxsaW5nRXJyb3IoJGVyckluZGV4KQogICAgICAgICAgICAkc3VnZ2VzdGlvbnMgPSBAKCRlcnJvci5TdWdnZXN0aW9ucykKICAgICAgICAgICAgaWYgKCRzdWdnZXN0aW9ucy5Db3VudCAtZ3QgMCkgewogICAgICAgICAgICAgICAgJG9yaWdpbmFsID0gJHRiLlRleHQuU3Vic3RyaW5nKCRlcnJJbmRleCwkbGVuKQogICAgICAgICAgICAgICAgJHN1Z2dlc3Rpb24gPSBbc3RyaW5nXSRzdWdnZXN0aW9uc1swXQogICAgICAgICAgICAgICAgJGRpc3RhbmNlID0gR2V0LUxldmVuc2h0ZWluICRvcmlnaW5hbC5Ub0xvd2VySW52YXJpYW50KCkgJHN1Z2dlc3Rpb24uVG9Mb3dlckludmFyaWFudCgpCiAgICAgICAgICAgICAgICAkbGltaXQgPSBpZiAoJG9yaWdpbmFsLkxlbmd0aCAtbGUgNCkgeyAxIH0gZWxzZWlmICgkb3JpZ2luYWwuTGVuZ3RoIC1sZSA4KSB7IDIgfSBlbHNlIHsgMyB9CgogICAgICAgICAgICAgICAgaWYgKCRkaXN0YW5jZSAtbGUgJGxpbWl0IC1hbmQgJHN1Z2dlc3Rpb24uTGVuZ3RoIC1ndCAwKSB7CiAgICAgICAgICAgICAgICAgICAgJHJlcGFpcnMgKz0gW3BzY3VzdG9tb2JqZWN0XUB7IFN0YXJ0PSRlcnJJbmRleDsgTGVuZ3RoPSRsZW47IFRleHQ9JHN1Z2dlc3Rpb24gfQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAgICAgICAgICRpZHggPSAkZXJySW5kZXggKyBbTWF0aF06Ok1heCgkbGVuLDEpCiAgICAgICAgfQoKICAgICAgICAkZml4ZWQgPSAkVGV4dAogICAgICAgIGZvcmVhY2ggKCRyIGluICgkcmVwYWlycyB8IFNvcnQtT2JqZWN0IFN0YXJ0IC1EZXNjZW5kaW5nKSkgewogICAgICAgICAgICAkZml4ZWQgPSAkZml4ZWQuUmVtb3ZlKFtpbnRdJHIuU3RhcnQsW2ludF0kci5MZW5ndGgpLkluc2VydChbaW50XSRyLlN0YXJ0LFtzdHJpbmddJHIuVGV4dCkKICAgICAgICB9CiAgICAgICAgcmV0dXJuICRmaXhlZAogICAgfSBjYXRjaCB7CiAgICAgICAgcmV0dXJuICRUZXh0CiAgICB9Cn0KCmZ1bmN0aW9uIEludm9rZS1GaXgoW3N0cmluZ10kVGV4dCkgewogICAgJGZpeGVkID0gJFRleHQKCiAgICBpZiAoSGFzLUFyYWJpYyAkZml4ZWQpIHsKICAgICAgICAkYXJhYmljID0gW29yZGVyZWRdQHsKICAgICAgICAgICAgItmH2KfYsNinIj0i2YfYsNinIjsgItmH2KfYsNmHIj0i2YfYsNmHIjsgItmE2KfZg9mGIj0i2YTZg9mGIjsgItin2YTZhNiw2YoiPSLYp9mE2LDZiiI7ICLYp9mE2YTYqtmKIj0i2KfZhNiq2YoiOwogICAgICAgICAgICAi2K7Yt9ihIj0i2K7Yt9ijIjsgItin2K7Yt9in2KEiPSLYo9iu2LfYp9ihIjsgItin2YTZiSI9Itil2YTZiSI7ICLYp9mE2KfZhiI9Itin2YTYotmGIjsgItin2YrYttinIj0i2KPZiti22YvYpyI7CiAgICAgICAgICAgICLZhdiz2KfZhNmHIj0i2YXYs9ij2YTYqSI7ICLZhdiz2KbZhNmHIj0i2YXYs9ij2YTYqSI7ICLZhdiz2YjZiNmEIj0i2YXYs9ik2YjZhCI7ICLZhNi62YciPSLZhNi62KkiOyAi2YPZhNmF2YciPSLZg9mE2YXYqSI7CiAgICAgICAgICAgICLZh9mG2KfYp9mDIj0i2YfZhtin2YMiOyAi2YfZhtin2KciPSLZh9mG2KciOyAi2YXYtNmD2YTZhyI9ItmF2LTZg9mE2KkiOyAi2LfYsdmK2YLZhyI9Iti32LHZitmC2KkiOyAi2KrYsdis2YXZhyI9Itiq2LHYrNmF2KkiOwogICAgICAgICAgICAi2KfZhti02KfYodin2YTZhNmHIj0i2KXZhiDYtNin2KEg2KfZhNmE2YciOyAi2LTYp9ih2KfZhNmE2YciPSLYtNin2KEg2KfZhNmE2YciCiAgICAgICAgfQogICAgICAgIGZvcmVhY2ggKCRrIGluICRhcmFiaWMuS2V5cykgeyAkZml4ZWQgPSBSZXBsYWNlLVdvcmQgJGZpeGVkICRrICRhcmFiaWNbJGtdICRmYWxzZSB9CgogICAgICAgICRiZWZvcmUgPSAkZml4ZWQKICAgICAgICAkZml4ZWQgPSBJbnZva2UtV2luZG93c1NwZWxsRml4ICRmaXhlZCAiYXItSVEiCiAgICAgICAgaWYgKCRmaXhlZCAtZXEgJGJlZm9yZSkgeyAkZml4ZWQgPSBJbnZva2UtV2luZG93c1NwZWxsRml4ICRmaXhlZCAiYXItU0EiIH0KICAgIH0gZWxzZSB7CiAgICAgICAgJGVuZ2xpc2ggPSBbb3JkZXJlZF1AewogICAgICAgICAgICAidGVoIj0idGhlIjsgImZyZW5kIj0iZnJpZW5kIjsgImZyZWluZCI9ImZyaWVuZCI7ICJyZWNpZXZlIj0icmVjZWl2ZSI7ICJhZHJlc3MiPSJhZGRyZXNzIjsKICAgICAgICAgICAgImJlY3Vhc2UiPSJiZWNhdXNlIjsgImxhbmdhdWdlIj0ibGFuZ3VhZ2UiOyAiZW5nbGloIj0iZW5nbGlzaCI7ICJ0cmFuc2FsdGUiPSJ0cmFuc2xhdGUiOwogICAgICAgICAgICAidHJhbnNsdGUiPSJ0cmFuc2xhdGUiOyAidGhpZXIiPSJ0aGVpciI7ICJ3aWVyZCI9IndlaXJkIjsgInNlcGVyYXRlIj0ic2VwYXJhdGUiOwogICAgICAgICAgICAiZGVmaW5hdGVseSI9ImRlZmluaXRlbHkiOyAib2NjdXJlZCI9Im9jY3VycmVkIjsgInVudGlsbCI9InVudGlsIjsgIndpY2giPSJ3aGljaCIKICAgICAgICB9CiAgICAgICAgZm9yZWFjaCAoJGsgaW4gJGVuZ2xpc2guS2V5cykgeyAkZml4ZWQgPSBSZXBsYWNlLVdvcmQgJGZpeGVkICRrICRlbmdsaXNoWyRrXSAkdHJ1ZSB9CgogICAgICAgICRmaXhlZCA9IEludm9rZS1XaW5kb3dzU3BlbGxGaXggJGZpeGVkICJlbi1VUyIKICAgICAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnKD9pKVxiSVxzK2hhc1xiJywnSSBoYXZlJykKICAgICAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnKD9pKVxieW91XHMraXNcYicsJ3lvdSBhcmUnKQogICAgICAgICRmaXhlZCA9IFtyZWdleF06OlJlcGxhY2UoJGZpeGVkLCcoP2kpXGJ0aGV5XHMraXNcYicsJ3RoZXkgYXJlJykKICAgICAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnKD9pKVxiaGVccytoYXZlXGInLCdoZSBoYXMnKQogICAgICAgICRmaXhlZCA9IFtyZWdleF06OlJlcGxhY2UoJGZpeGVkLCcoP2kpXGJzaGVccytoYXZlXGInLCdzaGUgaGFzJykKICAgIH0KCiAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnWyBcdF0rJywnICcpCiAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnXHMrKFssLjs6IT/YjNibXSknLCckMScpCiAgICAkZml4ZWQgPSBbcmVnZXhdOjpSZXBsYWNlKCRmaXhlZCwnKFssLjs6IT/YjNibXSkoW15cc1xyXG5dKScsJyQxICQyJykKICAgICRmaXhlZCA9IFtyZWdleF06OlJlcGxhY2UoJGZpeGVkLCcoXHI/XG4pezMsfScsKFtFbnZpcm9ubWVudF06Ok5ld0xpbmUgKyBbRW52aXJvbm1lbnRdOjpOZXdMaW5lKSkKICAgIHJldHVybiAkZml4ZWQuVHJpbSgpCn0KCnRyeSB7CiAgICBpZiAoLW5vdCAoVGVzdC1QYXRoIC1MaXRlcmFsUGF0aCAkSW5wdXRGaWxlKSkgeyB0aHJvdyAiSW5wdXQgZmlsZSB3YXMgbm90IGZvdW5kLiIgfQogICAgJHRleHQgPSBbU3lzdGVtLklPLkZpbGVdOjpSZWFkQWxsVGV4dCgkSW5wdXRGaWxlLFtTeXN0ZW0uVGV4dC5FbmNvZGluZ106OlVURjgpCgogICAgaWYgKFtzdHJpbmddOjpJc051bGxPcldoaXRlU3BhY2UoJHRleHQpKSB7CiAgICAgICAgV3JpdGUtUmVzdWx0ICIiCiAgICAgICAgZXhpdCAwCiAgICB9CgogICAgaWYgKCRNb2RlIC1lcSAidHJhbnNsYXRlIikgeyBXcml0ZS1SZXN1bHQgKEludm9rZS1UcmFuc2xhdGlvbiAkdGV4dCkgfQogICAgZWxzZSB7IFdyaXRlLVJlc3VsdCAoSW52b2tlLUZpeCAkdGV4dCkgfQogICAgZXhpdCAwCn0KY2F0Y2ggewogICAgV3JpdGUtUmVzdWx0ICgiX19FUlJPUl9fOiIgKyAkXy5FeGNlcHRpb24uTWVzc2FnZSkKICAgIGV4aXQgMQp9Cg=="
+
+WriteBase64File(base64, path) {
+    size := 0
+    if !DllCall("Crypt32\\CryptStringToBinaryW", "Str", base64, "UInt", 0, "UInt", 0x1, "Ptr", 0, "UIntP", &size, "Ptr", 0, "Ptr", 0)
+        throw Error("Could not decode embedded language engine.")
+
+    buf := Buffer(size)
+    if !DllCall("Crypt32\\CryptStringToBinaryW", "Str", base64, "UInt", 0, "UInt", 0x1, "Ptr", buf.Ptr, "UIntP", &size, "Ptr", 0, "Ptr", 0)
+        throw Error("Could not decode embedded language engine.")
+
+    f := FileOpen(path, "w")
+    f.RawWrite(buf, size)
+    f.Close()
+}
+
 RunHelper(mode, txt) {
+    global EngineBase64
+
     stamp := A_TickCount
-    inputFile := A_Temp "\ocl_input_" stamp ".txt"
-    outputFile := A_Temp "\ocl_output_" stamp ".txt"
-    scriptFile := A_Temp "\ocl_helper_" stamp ".ps1"
+    inputFile := A_Temp "\\ocl_input_" stamp ".txt"
+    outputFile := A_Temp "\\ocl_output_" stamp ".txt"
+    scriptFile := A_Temp "\\ocl_engine_" stamp ".ps1"
 
     try {
         FileAppend(txt, inputFile, "UTF-8")
-
-        ps := "
-(
-param(
-    [Parameter(Mandatory=$true)][string]$Mode,
-    [Parameter(Mandatory=$true)][string]$InputFile,
-    [Parameter(Mandatory=$true)][string]$OutputFile
-)
-$ErrorActionPreference='Stop'
-
-function Write-Result([string]$Text) {
-    [System.IO.File]::WriteAllText($OutputFile,$Text,[System.Text.UTF8Encoding]::new($false))
-}
-function Has-Arabic([string]$Text) {
-    return [regex]::IsMatch($Text,'[\u0600-\u06FF]')
-}
-function Translate-Text([string]$Text) {
-    $target = if (Has-Arabic $Text) { 'en' } else { 'ar' }
-    $encoded = [System.Uri]::EscapeDataString($Text)
-    $uri = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + $target + '&dt=t&q=' + $encoded
-    $r = Invoke-RestMethod -Uri $uri -Method Get -TimeoutSec 20
-    if ($null -eq $r -or $null -eq $r[0]) { throw 'Empty translation response.' }
-    $parts = foreach($p in $r[0]) {
-        if ($null -ne $p -and $p.Count -gt 0 -and $null -ne $p[0]) { [string]$p[0] }
-    }
-    return ($parts -join '')
-}
-function Fix-Text([string]$Text) {
-    $body = @{ text=$Text; language='auto' }
-    $r = Invoke-RestMethod -Uri 'https://api.languagetool.org/v2/check' -Method Post -ContentType 'application/x-www-form-urlencoded' -Body $body -TimeoutSec 20
-    $fixed = $Text
-    $matches = @($r.matches) | Sort-Object -Property offset -Descending
-    foreach($m in $matches) {
-        if ($null -eq $m.replacements -or $m.replacements.Count -eq 0) { continue }
-        $off=[int]$m.offset
-        $len=[int]$m.length
-        $rep=[string]$m.replacements[0].value
-        if ($off -ge 0 -and $len -ge 0 -and ($off+$len) -le $fixed.Length) {
-            $fixed=$fixed.Remove($off,$len).Insert($off,$rep)
-        }
-    }
-    $fixed=[regex]::Replace($fixed,'[ \t]+',' ')
-    $fixed=[regex]::Replace($fixed,'\s+([,.;:!?،؛])','$1')
-    $fixed=[regex]::Replace($fixed,'([,.;:!?،؛])([^\s\r\n])','$1 $2')
-    return $fixed.Trim()
-}
-try {
-    $text=[System.IO.File]::ReadAllText($InputFile,[System.Text.Encoding]::UTF8)
-    if ([string]::IsNullOrWhiteSpace($text)) { Write-Result ''; exit 0 }
-    if ($Mode -eq 'translate') { Write-Result (Translate-Text $text) }
-    elseif ($Mode -eq 'fix') { Write-Result (Fix-Text $text) }
-    else { throw 'Unknown mode.' }
-    exit 0
-} catch {
-    Write-Result ('__ERROR__:' + $_.Exception.Message)
-    exit 1
-}
-)"
-        FileAppend(ps, scriptFile, "UTF-8")
+        WriteBase64File(EngineBase64, scriptFile)
 
         q := Chr(34)
-        cmd := "powershell.exe -NoProfile -ExecutionPolicy Bypass -File "
+        cmd := "powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File "
             . q scriptFile q
             . " -Mode " q mode q
             . " -InputFile " q inputFile q
@@ -227,7 +187,7 @@ try {
         exitCode := RunWait(cmd, , "Hide")
 
         if !FileExist(outputFile)
-            return "__ERROR__:No result was returned. Windows PowerShell may be blocked."
+            return "__ERROR__:No result returned. Windows PowerShell may be blocked."
 
         result := FileRead(outputFile, "UTF-8")
 
@@ -236,7 +196,7 @@ try {
         try FileDelete(scriptFile)
 
         if (exitCode != 0 && SubStr(result, 1, 10) != "__ERROR__:")
-            return "__ERROR__:PowerShell failed with exit code " exitCode "."
+            return "__ERROR__:Language engine failed with exit code " exitCode "."
 
         return result
     } catch as err {
