@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>One-Click Language Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="card">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">GitHub Demo</p>
+          <h1>One-Click Language</h1>
+          <p class="sub">اكتب بالعربي أو الإنكليزي، وبدّل الاتجاه وصحّح التنسيق بسرعة.</p>
+        </div>
+        <button id="langBtn" class="primary">AR ⇄ EN</button>
+      </div>
+
+      <label for="text">النص</label>
+      <textarea id="text" spellcheck="true" placeholder="اكتب هنا..."></textarea>
+
+      <div class="actions">
+        <button id="detectBtn">اكتشاف اللغة</button>
+        <button id="fixBtn">تصحيح سريع</button>
+        <button id="clearBtn">مسح</button>
+      </div>
+
+      <div class="status" id="status">جاهز</div>
+
+      <div class="note">
+        <strong>ملاحظة:</strong>
+        الترجمة الحقيقية تحتاج خدمة ترجمة خارجية أو API. هذه النسخة تركز على تجربة GitHub والواجهة والتصحيح السريع.
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
