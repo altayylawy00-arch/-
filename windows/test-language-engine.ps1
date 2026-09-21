@@ -1,12 +1,16 @@
 param([string]$Engine = ".\windows\language-engine.ps1")
 $ErrorActionPreference = "Stop"
 
+$engineUtf8 = [IO.File]::ReadAllText($Engine,[Text.Encoding]::UTF8)
+$EngineBom = Join-Path $env:TEMP ("ocl_engine_test_"+[guid]::NewGuid().ToString("N")+".ps1")
+[IO.File]::WriteAllText($EngineBom,$engineUtf8,[Text.UTF8Encoding]::new($true))
+
 function Run-Engine([string]$Mode,[string]$Text) {
     $id=[guid]::NewGuid().ToString("N")
     $in=Join-Path $env:TEMP ("ocl_in_"+$id+".txt")
     $out=Join-Path $env:TEMP ("ocl_out_"+$id+".txt")
     [IO.File]::WriteAllText($in,$Text,[Text.UTF8Encoding]::new($false))
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $Engine -Mode $Mode -InputFile $in -OutputFile $out
+    & powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File $EngineBom -Mode $Mode -InputFile $in -OutputFile $out
     $r=[IO.File]::ReadAllText($out,[Text.Encoding]::UTF8)
     Remove-Item $in,$out -Force -ErrorAction SilentlyContinue
     return $r
@@ -35,3 +39,6 @@ if($arToEn.StartsWith("__ERROR__:") -or -not [regex]::IsMatch($arToEn,'[A-Za-z]'
     throw "Arabic->English translation failed: $arToEn"
 }
 Write-Host "PASS: Arabic->English -> $arToEn"
+
+
+Remove-Item $EngineBom -Force -ErrorAction SilentlyContinue
