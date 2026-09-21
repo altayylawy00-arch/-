@@ -161,6 +161,11 @@ WriteBase64File(base64, path) {
         throw Error("Could not decode embedded language engine.")
 
     f := FileOpen(path, "w")
+    bom := Buffer(3)
+    NumPut("UChar", 0xEF, bom, 0)
+    NumPut("UChar", 0xBB, bom, 1)
+    NumPut("UChar", 0xBF, bom, 2)
+    f.RawWrite(bom, 3)
     f.RawWrite(buf, size)
     f.Close()
 }
